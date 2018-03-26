@@ -59,20 +59,7 @@ bool buttonListener1() {
     play = HIGH;
     ovdb = LOW;
   }
-  // LED1
-  if (rec == HIGH || ovdb == HIGH) {
-    mgr.addListener(new EvtTimeListener(250, true, (EvtAction)blinkLED1));
-  } else {
-    led1State = HIGH;
-    blinkLED1();
-  }
-  // LED2
-  if (play == HIGH || ovdb == HIGH) {
-    mgr.addListener(new EvtTimeListener(250, true, (EvtAction)blinkLED2));
-  } else {
-    led2State = HIGH;
-    blinkLED2();
-  }
+  mgr.addListener(new EvtTimeListener(250, true, (EvtAction)blinkLED));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, (EvtAction)buttonListener2));
   return true;
 }
@@ -87,26 +74,28 @@ bool buttonListener2() {
   rec = LOW;
   play = LOW;
   ovdb = LOW;
-  led1State = HIGH;
-  // LEDs off
-  blinkLED1();
-  led2State = HIGH;
-  blinkLED2();
+  blinkLED();
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, (EvtAction)buttonListener1));
   return true;
 }
 
-//  red led
-bool blinkLED1() {
-  led1State = !led1State;
-  digitalWrite(LED1_PIN, led1State);
-  return false;
-}
-
-// green led
-bool blinkLED2() {
-  led2State = !led2State;
-  digitalWrite(LED2_PIN, led2State);
+bool blinkLED() {
+  // red led
+  if (rec == HIGH || ovdb == HIGH) {
+    led1State = !led1State;
+    digitalWrite(LED1_PIN, led1State);
+  } else {
+    led1State = LOW;
+    digitalWrite(LED1_PIN, led1State);
+  }
+  // green led
+  if (play == HIGH || ovdb == HIGH) {
+    led2State = !led2State;
+    digitalWrite(LED2_PIN, led2State);
+  } else {
+    led2State = LOW;
+    digitalWrite(LED2_PIN, led2State);
+  }
   return false;
 }
 
@@ -119,14 +108,3 @@ void sendNote(int cmd, int pitch, int velocity) {
 }
 
 USE_EVENTUALLY_LOOP(mgr)
-
-
-/*bool set_blinkType1() {
-  mgr.resetContext();
-  mgr.addListener(new EvtPinListener(BUTTON1_PIN, (EvtAction)set_blinkType1));
-  blink1Type = !blink1Type;
-  if (blink1Type = HIGH) {
-    mgr.addListener(new EvtTimeListener(250, true, (EvtAction)blink));
-  }
-  }
-*/
