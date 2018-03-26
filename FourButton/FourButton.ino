@@ -40,15 +40,24 @@ bool buttonListener1() {
   // Send midi note here
   sendNote(0x90, 0x30, 0x45); // on
   sendNote(0x90, 0x30, 0x45); // off
-  if (rec == LOW && play == LOW){
+  // statemachine (recording -> playing <-> overdubbing)
+  if (rec == LOW && play == LOW && ovdb == LOW) {            // recording
     rec = HIGH;
+    //play = LOW;
+    //ovdb = LOW;
     stop = LOW;
-  } else if (rec == LOW && play == HIGH) {
+  } else if (rec == LOW && play == HIGH && ovdb == LOW) {    // overdubbing
+    //rec = LOW;
+    play = LOW;
     ovdb = HIGH;
-  } else {
-    rec = LOW;
-    ovdb = LOW;
+  } else if (rec == LOW && play == LOW && ovdb == HIGH) {    // playing after overdubbing
+    // rec = LOW;
     play = HIGH;
+    ovdb = LOW;
+  } else {                                                   // playing after recording
+    rec = LOW;
+    play = HIGH;
+    ovdb = LOW;
   }
   // LED1
   if (rec == HIGH || ovdb == HIGH) {
@@ -119,5 +128,5 @@ USE_EVENTUALLY_LOOP(mgr)
   if (blink1Type = HIGH) {
     mgr.addListener(new EvtTimeListener(250, true, (EvtAction)blink));
   }
-}
+  }
 */
