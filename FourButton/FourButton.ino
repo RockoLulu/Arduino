@@ -8,12 +8,17 @@
 #define BUTTON1_PIN    8 // First button
 #define BUTTON2_PIN    9 // Second button
 
+#define DEBOUNCE_SHORT 40
+#define DEBOUNCE_LONG  1000
+
 #define NOTE_OFF       0x80
 #define NOTE_ON        0x90
 #define CHANNEL        11
 
 #define NOTE1          0x30 // C2
 #define NOTE2          0x3C // C3
+#define NOTE3          0x48 // C4
+#define NOTE4          0x54 // C5
 
 #define VELOCITY       0x7F
 
@@ -26,26 +31,27 @@ bool led2State  =      LOW;
 bool blink2Type =      LOW;
 
 // states
-bool rec = LOW;
-bool play = LOW;
-bool ovdb = LOW;
-bool stop = LOW;
+bool rec        =      LOW;
+bool play       =      LOW;
+bool ovdb       =      LOW;
+bool undo       =      LOW;
+bool stop       =      LOW;
+bool erase      =      LOW;
 
 void setup() {
   pinMode(LED1_PIN, OUTPUT);
   pinMode(LED2_PIN, OUTPUT);
   pinMode(BUTTON1_PIN, INPUT);
   pinMode(BUTTON2_PIN, INPUT);
-  mgr.addListener(new EvtPinListener(BUTTON1_PIN, (EvtAction)buttonListener1));
-  mgr.addListener(new EvtPinListener(BUTTON2_PIN, (EvtAction)buttonListener2));
+  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)button1Listener1));
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)button2Listener1));
   //  Set MIDI baud rate:
   Serial.begin(31250);
   return true;
 }
-
-bool buttonListener1() {
+// Rec / Play / Ovdb
+bool button1Listener1() {
   mgr.resetContext();
-  mgr.addListener(new EvtPinListener(BUTTON1_PIN, (EvtAction)buttonListener1));
   // Send midi note here
   sendMidi(NOTE_ON, NOTE1, VELOCITY); // on
   sendMidi(NOTE_OFF, NOTE1, VELOCITY); // off
@@ -69,13 +75,16 @@ bool buttonListener1() {
     ovdb = LOW;
   }
   mgr.addListener(new EvtTimeListener(250, true, (EvtAction)blinkLED));
-  mgr.addListener(new EvtPinListener(BUTTON2_PIN, (EvtAction)buttonListener2));
+  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_LONG, (EvtAction)button1Listener2));
+  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)button1Listener1));
+  
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)button2Listener1));
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, (EvtAction)button2Listener2));
   return true;
 }
-
-bool buttonListener2() {
+// Stop
+bool button2Listener1() {
   mgr.resetContext();
-  mgr.addListener(new EvtPinListener(BUTTON2_PIN, (EvtAction)buttonListener2));
   // Send midi note here
   sendMidi(NOTE_ON, NOTE2, VELOCITY); // on
   sendMidi(NOTE_OFF, NOTE2, VELOCITY); // off
@@ -84,7 +93,40 @@ bool buttonListener2() {
   play = LOW;
   ovdb = LOW;
   blinkLED();
-  mgr.addListener(new EvtPinListener(BUTTON1_PIN, (EvtAction)buttonListener1));
+  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)button1Listener1));
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)button2Listener1));
+  return true;
+}
+// Undo
+bool button1Listener2() {
+  mgr.resetContext();
+  // Send midi note here
+  sendMidi(NOTE_ON, NOTE3, VELOCITY); // on
+  sendMidi(NOTE_OFF, NOTE3, VELOCITY); // off
+  // Set states
+  rec = LOW;
+  play = HIGH;
+  ovdb = LOW;
+  blinkLED();
+  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)button1Listener1));
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)button2Listener1));
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, (EvtAction)button2Listener2));
+  return true;
+}
+// Erase
+bool button2Listener2() {
+  mgr.resetContext();
+  // Send midi note here
+  sendMidi(NOTE_ON, NOTE4, VELOCITY); // on
+  sendMidi(NOTE_OFF, NOTE4, VELOCITY); // off
+  // Set states
+  rec = LOW;
+  play = LOW;
+  ovdb = LOW;
+  blinkLED();
+  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)button1Listener1));
+  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_LONG, (EvtAction)button1Listener2));
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)button2Listener1));
   return true;
 }
 
