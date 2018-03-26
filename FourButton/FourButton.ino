@@ -2,19 +2,23 @@
 /*
     This is a program to controll a four footswitch midi controller with two red and two green leds
 */
-#define LED1_PIN 2 // First red led
-#define LED2_PIN 3 // First green led
+#define LED1_PIN       2 // First red led
+#define LED2_PIN       3 // First green led
 
-#define BUTTON1_PIN 8 // First button
-#define BUTTON2_PIN 9 // Second button
+#define BUTTON1_PIN    8 // First button
+#define BUTTON2_PIN    9 // Second button
+
+#define NOTE_OFF       0x80
+#define NOTE_ON        0x90
+#define CHANNEL        1
 
 EvtManager mgr;
 
-bool led1State = LOW; // led is on or off
-bool blink1Type = LOW; // slow blink or flash
+bool led1State  =      LOW; // led is on or off
+bool blink1Type =      LOW; // slow blink or flash
 
-bool led2State = LOW;
-bool blink2Type = LOW;
+bool led2State  =      LOW;
+bool blink2Type =      LOW;
 
 // states
 bool rec = LOW;
