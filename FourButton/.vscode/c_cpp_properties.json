@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "/Users/Lukas/Library/Arduino15/packages/arduino/hardware/avr/1.6.21/cores/arduino",
+                "/Users/Lukas/GitRepo/Arduino/libraries",
+                "/Users/Lukas/GitRepo/Arduino/libraries/Eventually/src",
+                "/System/Library/Frameworks/Kernel.framework/Versions/A/Headers"
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": false,
+                "path": [
+                    "/Users/Lukas/Library/Arduino15/packages/arduino/hardware/avr/1.6.21/cores/arduino",
+                    "/Users/Lukas/GitRepo/Arduino/libraries"
+                ]
+            },
+            "intelliSenseMode": "clang-x64",
+            "macFrameworkPath": [
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
+            ]
+        }
+    ],
+    "version": 3
+}
