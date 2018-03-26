@@ -10,7 +10,12 @@
 
 #define NOTE_OFF       0x80
 #define NOTE_ON        0x90
-#define CHANNEL        1
+#define CHANNEL        11
+
+#define NOTE1          0x30 // C2
+#define NOTE2          0x3C // C3
+
+#define VELOCITY       0x7F
 
 EvtManager mgr;
 
@@ -42,8 +47,8 @@ bool buttonListener1() {
   mgr.resetContext();
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, (EvtAction)buttonListener1));
   // Send midi note here
-  sendNote(0x90, 0x30, 0x45); // on
-  sendNote(0x90, 0x30, 0x45); // off
+  sendMidi(NOTE_ON, NOTE1, VELOCITY); // on
+  sendMidi(NOTE_OFF, NOTE1, VELOCITY); // off
   // statemachine (recording -> playing <-> overdubbing)
   if (rec == LOW && play == LOW && ovdb == LOW) {            // recording
     rec = HIGH;
@@ -72,8 +77,8 @@ bool buttonListener2() {
   mgr.resetContext();
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, (EvtAction)buttonListener2));
   // Send midi note here
-  sendNote(0x90, 0x30, 0x45); // on
-  sendNote(0x90, 0x30, 0x45); // off
+  sendMidi(NOTE_ON, NOTE2, VELOCITY); // on
+  sendMidi(NOTE_OFF, NOTE2, VELOCITY); // off
   // Reset states
   rec = LOW;
   play = LOW;
@@ -105,8 +110,8 @@ bool blinkLED() {
 
 //  plays a MIDI note.  Doesn't check to see that
 //  cmd is greater than 127, or that data values are less than 127:
-void sendNote(int cmd, int pitch, int velocity) {
-  Serial.write(cmd);
+void sendMidi(int cmd, int pitch, int velocity) {
+  Serial.write(cmd | CHANNEL - 1);
   Serial.write(pitch);
   Serial.write(velocity);
 }
