@@ -74,18 +74,18 @@ bool button1Listener1() {
     play = HIGH;
     ovdb = LOW;
   }
-  if (undo == HIGH) {
+  if (undo == HIGH) {                                                       // undo
     mgr.addListener(new EvtTimeListener(BLINK_FAST, true, (EvtAction)blinkLED));
   } else {
     mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED));
   }
   undo = LOW;
-  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_LONG, (EvtAction)button1Listener2));
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)button1Listener1));
+  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_LONG, (EvtAction)button1Listener2));
   
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)button2Listener1));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, (EvtAction)button2Listener2));
-  return true;
+  return false;
 }
 // Stop
 bool button2Listener1() {
@@ -114,7 +114,7 @@ bool button1Listener2() {
   play = HIGH;
   ovdb = LOW;
   undo = HIGH;
-  button1Listener1();
+  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)button1Listener1));
   return true;
 }
 // Erase
