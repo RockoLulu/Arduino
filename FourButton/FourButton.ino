@@ -20,15 +20,15 @@
 #define NOTE3          0x48 // C4
 #define NOTE4          0x54 // C5
 
-#define VELOCITY       0x7F
+#define VELOCITY       0x7F // 127 full midi velocity
+
+#define BLINK_SLOW     250 // slow blink
+#define BLINK_FAST     100 // flash
 
 EvtManager mgr;
 
 bool led1State  =      LOW; // led is on or off
-bool blink1Type =      LOW; // slow blink or flash
-
 bool led2State  =      LOW;
-bool blink2Type =      LOW;
 
 // states
 bool rec        =      LOW;
@@ -53,28 +53,33 @@ void setup() {
 bool button1Listener1() {
   mgr.resetContext();
   // Send midi note here
-  sendMidi(NOTE_ON, NOTE1, VELOCITY); // on
-  sendMidi(NOTE_OFF, NOTE1, VELOCITY); // off
+  sendMidi(NOTE_ON, NOTE1, VELOCITY);   // on
+  sendMidi(NOTE_OFF, NOTE1, VELOCITY);  // off
   // statemachine (recording -> playing <-> overdubbing)
-  if (rec == LOW && play == LOW && ovdb == LOW) {            // recording
+  if (rec == LOW && play == LOW && ovdb == LOW && undo == LOW) {            // recording
     rec = HIGH;
     //play = LOW;
     //ovdb = LOW;
     stop = LOW;
-  } else if (rec == LOW && play == HIGH && ovdb == LOW) {    // overdubbing
+  } else if (rec == LOW && play == HIGH && ovdb == LOW && undo == LOW) {    // overdubbing
     //rec = LOW;
     play = LOW;
     ovdb = HIGH;
-  } else if (rec == LOW && play == LOW && ovdb == HIGH) {    // playing after overdubbing
+  } else if (rec == LOW && play == LOW && ovdb == HIGH && undo == LOW) {    // playing after overdubbing
     // rec = LOW;
     play = HIGH;
     ovdb = LOW;
-  } else {                                                   // playing after recording
+  } else {                                                                  // playing after recording
     rec = LOW;
     play = HIGH;
     ovdb = LOW;
   }
-  mgr.addListener(new EvtTimeListener(250, true, (EvtAction)blinkLED));
+  if (undo == HIGH) {
+    mgr.addListener(new EvtTimeListener(BLINK_FAST, true, (EvtAction)blinkLED));
+  } else {
+    mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED));
+  }
+  undo = LOW;
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_LONG, (EvtAction)button1Listener2));
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)button1Listener1));
   
@@ -93,6 +98,7 @@ bool button2Listener1() {
   play = LOW;
   ovdb = LOW;
   blinkLED();
+  rec = HIGH;
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)button1Listener1));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)button2Listener1));
   return true;
@@ -107,10 +113,8 @@ bool button1Listener2() {
   rec = LOW;
   play = HIGH;
   ovdb = LOW;
-  blinkLED();
-  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)button1Listener1));
-  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)button2Listener1));
-  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, (EvtAction)button2Listener2));
+  undo = HIGH;
+  button1Listener1();
   return true;
 }
 // Erase
@@ -123,10 +127,8 @@ bool button2Listener2() {
   rec = LOW;
   play = LOW;
   ovdb = LOW;
-  blinkLED();
-  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)button1Listener1));
-  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_LONG, (EvtAction)button1Listener2));
-  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)button2Listener1));
+  erase = HIGH;
+  button2Listener1();
   return true;
 }
 
