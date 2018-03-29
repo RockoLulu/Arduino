@@ -2,40 +2,41 @@
 /*
     This is a program to controll a four footswitch midi controller with two red and two green leds
 */
+// Pins
 #define LED1_PIN 2 // First red led
 #define LED2_PIN 3 // First green led
-
 #define BUTTON1_PIN 8 // First button
 #define BUTTON2_PIN 9 // Second button
-
-#define DEBOUNCE_SHORT 40
-#define DEBOUNCE_LONG 1000
-#define DEBOUNCE 500
-
+// Midi
 #define NOTE_OFF 0x80
 #define NOTE_ON 0x90
 #define CHANNEL 11
-
+#define VELOCITY 0x7F // 127 full midi velocity
+// Loop1
 #define NOTE1 0x30 // C2
 #define NOTE2 0x3C // C3
 #define NOTE3 0x48 // C4
 #define NOTE4 0x54 // C5
-
-#define VELOCITY 0x7F // 127 full midi velocity
-
+// Loop2
+#define NOTE5 0x26 // D2
+#define NOTE6 0x32 // D3
+#define NOTE7 0x3E // D4
+#define NOTE8 0x4A // D5
+// Blink and debounce
 #define BLINK_SLOW 250 // slow blink
 #define BLINK_FAST 100 // flash
-
-EvtManager mgr;
-
+#define DEBOUNCE_SHORT 40
+#define DEBOUNCE_LONG 1000
+#define DEBOUNCE 500
+// States
 bool led1State = LOW; // led is on or off
 bool led2State = LOW;
 bool pin1State = LOW;
-
-// states
 bool rec = LOW;
 bool play = LOW;
 bool ovdb = LOW;
+
+EvtManager mgr;
 
 void setup()
 {
@@ -91,8 +92,8 @@ bool rec1Listener()
   { // Wait with sending the off note to trigger the ableton 2 sec undo/redo
     delay(1600);
     sendMidi(NOTE_OFF, NOTE1, VELOCITY); // off
-    sendMidi(NOTE_ON, NOTE3, VELOCITY);  // on
-    sendMidi(NOTE_OFF, NOTE3, VELOCITY); // off
+    /* sendMidi(NOTE_ON, NOTE3, VELOCITY);  // on
+    sendMidi(NOTE_OFF, NOTE3, VELOCITY); // off */
     // LED 1 flash
     digitalWrite(LED1_PIN, LOW);
     delay(BLINK_FAST);
