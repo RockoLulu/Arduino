@@ -143,7 +143,7 @@ bool blinkLED() {
   }
   // green led
   if (play == HIGH || ovdb == HIGH) {
-    led2State = !led2State;
+    led2State = HIGH;
     digitalWrite(LED2_PIN, led2State);
   } else {
     led2State = LOW;
