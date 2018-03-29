@@ -10,7 +10,7 @@
 
 #define DEBOUNCE_SHORT 40
 #define DEBOUNCE_LONG 1000
-#define DEBOUNCE 250
+#define DEBOUNCE 500
 
 #define NOTE_OFF 0x80
 #define NOTE_ON 0x90
@@ -31,15 +31,11 @@ EvtManager mgr;
 bool led1State = LOW; // led is on or off
 bool led2State = LOW;
 bool pin1State = LOW;
-bool pin2State = LOW;
 
 // states
 bool rec = LOW;
 bool play = LOW;
 bool ovdb = LOW;
-bool undo = LOW;
-bool stop = LOW;
-bool erase = LOW;
 
 void setup()
 {
@@ -47,38 +43,37 @@ void setup()
   pinMode(LED2_PIN, OUTPUT);
   pinMode(BUTTON1_PIN, INPUT);
   pinMode(BUTTON2_PIN, INPUT);
-  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)button1Listener1));
-  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, (EvtAction)button2Listener2));
+  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, (EvtAction)erase1Listener));
   //  Set MIDI baud rate:
   Serial.begin(31250);
   return true;
 }
 // Rec / Play / Ovdb
-bool button1Listener1()
+bool rec1Listener()
 {
   mgr.resetContext();
+  digitalWrite(LED1_PIN, LOW);
+  sendMidi(NOTE_ON, NOTE1, VELOCITY); // on
   delay(DEBOUNCE); // Wait for the button to change state
   pin1State = digitalRead(BUTTON1_PIN);
-  // Send midi note here
-  if (pin1State == LOW)
+  if (pin1State == LOW) // Recording
   {
-    sendMidi(NOTE_ON, NOTE1, VELOCITY);  // on
     sendMidi(NOTE_OFF, NOTE1, VELOCITY); // off
     // statemachine (recording -> playing <-> overdubbing)
-    if (rec == LOW && play == LOW && ovdb == LOW && undo == LOW)
+    if (rec == LOW && play == LOW && ovdb == LOW)
     { // recording
       rec = HIGH;
       //play = LOW;
       //ovdb = LOW;
-      stop = LOW;
     }
-    else if (rec == LOW && play == HIGH && ovdb == LOW && undo == LOW)
+    else if (rec == LOW && play == HIGH && ovdb == LOW)
     { // overdubbing
       //rec = LOW;
       play = LOW;
       ovdb = HIGH;
     }
-    else if (rec == LOW && play == LOW && ovdb == HIGH && undo == LOW)
+    else if (rec == LOW && play == LOW && ovdb == HIGH)
     { // playing after overdubbing
       // rec = LOW;
       play = HIGH;
@@ -89,89 +84,63 @@ bool button1Listener1()
       rec = LOW;
       play = HIGH;
       ovdb = LOW;
-      undo = LOW;
     }
     mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED));
   }
-
-  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)button1Listener1));
-  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_LONG, false, (EvtAction)button1Listener2));
-
-  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)button2Listener1));
-  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, false, (EvtAction)button2Listener2));
-  return false;
-}
-// Undo
-bool button1Listener2()
-{
-  mgr.resetContext();
-  // Send midi note here
-  sendMidi(NOTE_ON, NOTE3, VELOCITY);  // on
-  sendMidi(NOTE_OFF, NOTE3, VELOCITY); // off
-  led1State = LOW;
-  digitalWrite(LED1_PIN, led1State);
-  delay(BLINK_FAST);
-  led1State = HIGH;
-  digitalWrite(LED1_PIN, led1State);
-  delay(BLINK_FAST);
-  led1State = LOW;
-  digitalWrite(LED1_PIN, led1State);
-  // Set states
-  rec = LOW;
-  play = HIGH;
-  ovdb = LOW;
-  undo = HIGH;
-  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)button1Listener1));
-  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_LONG, false, (EvtAction)button1Listener2));
-  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)button2Listener1));
-  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, false, (EvtAction)button2Listener2));
+  else
+  { // Wait with sending the off note to trigger the ableton 2 sec undo/redo
+    delay(1600);
+    sendMidi(NOTE_OFF, NOTE1, VELOCITY); // off
+    sendMidi(NOTE_ON, NOTE3, VELOCITY);  // on
+    sendMidi(NOTE_OFF, NOTE3, VELOCITY); // off
+    // LED 1 flash
+    digitalWrite(LED1_PIN, LOW);
+    delay(BLINK_FAST);
+    digitalWrite(LED1_PIN, HIGH);
+    delay(BLINK_FAST);
+    digitalWrite(LED1_PIN, LOW);
+    // LED 2 on
+    digitalWrite(LED2_PIN, HIGH);
+    rec = LOW;
+    play = HIGH;
+    ovdb = LOW;
+  }
+  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, false, (EvtAction)erase1Listener));
   return false;
 }
 // Stop
-bool button2Listener1()
+bool stop1Listener()
 {
   mgr.resetContext();
-  delay(DEBOUNCE); // Wait for the button to change state
-  pin2State = digitalRead(BUTTON2_PIN);
-  // Send midi note here
-  if (pin2State == LOW)
-  {
-    sendMidi(NOTE_ON, NOTE2, VELOCITY);  // on
-    sendMidi(NOTE_OFF, NOTE2, VELOCITY); // off
-  }
-  else
-  {
-    erase == HIGH;
-  }
+  sendMidi(NOTE_ON, NOTE2, VELOCITY);  // on
+  sendMidi(NOTE_OFF, NOTE2, VELOCITY); // off
   // Reset states
-  rec = LOW;
   play = LOW;
   ovdb = LOW;
-  blinkLED();
   rec = HIGH;
-  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)button1Listener1));
-  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_LONG, false, (EvtAction)button1Listener2));
-  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)button2Listener1));
-  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, false, (EvtAction)button2Listener2));
-  return false;
+  digitalWrite(LED1_PIN, LOW);
+  digitalWrite(LED2_PIN, LOW);
+  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, false, (EvtAction)erase1Listener));
+  return true;
 }
 // Erase
-bool button2Listener2()
+bool erase1Listener()
 {
   mgr.resetContext();
-  // Send midi note here
   sendMidi(NOTE_ON, NOTE4, VELOCITY);  // on
   sendMidi(NOTE_OFF, NOTE4, VELOCITY); // off
   // Set states
   rec = LOW;
   play = LOW;
   ovdb = LOW;
-  undo = LOW;
-  erase = HIGH;
-  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)button1Listener1));
-  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_LONG, false, (EvtAction)button1Listener2));
-  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)button2Listener1));
-  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, false, (EvtAction)button2Listener2));
+  digitalWrite(LED1_PIN, LOW);
+  digitalWrite(LED2_PIN, LOW);
+  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
   return false;
 }
 
