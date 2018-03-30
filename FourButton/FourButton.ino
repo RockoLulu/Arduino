@@ -23,10 +23,10 @@
 #define NOTE3 0x48 // C4
 #define NOTE4 0x54 // C5
 // Loop2
-#define NOTE5 0x26 // D2
-#define NOTE6 0x32 // D3
-#define NOTE7 0x3E // D4
-#define NOTE8 0x4A // D5
+#define NOTE5 0x32 // D2
+#define NOTE6 0x3E // D3
+#define NOTE7 0x4A // D4
+#define NOTE8 0x56 // D5
 // Blink and debounce
 #define BLINK_SLOW 250 // slow blink
 #define BLINK_FAST 100 // flash
@@ -34,15 +34,10 @@
 #define DEBOUNCE_LONG 1000
 #define DEBOUNCE 500
 // States
-bool led1State = LOW; // led is on or off
-bool led2State = LOW;
 bool pin1State = LOW;
 bool rec1 = LOW;
 bool play1 = LOW;
 bool ovdb1 = LOW;
-
-bool led3State = LOW; // led is on or off
-bool led4State = LOW;
 bool pin3State = LOW;
 bool rec2 = LOW;
 bool play2 = LOW;
@@ -105,7 +100,7 @@ bool rec1Listener()
       play1 = HIGH;
       ovdb1 = LOW;
     }
-    mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED1));
+    blinkLED1();
   }
   else
   { // Wait with sending the off note to trigger the ableton 2 sec undo/redo
@@ -125,7 +120,6 @@ bool rec1Listener()
     play1 = HIGH;
     ovdb1 = LOW;
   }
-  mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED2));
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, false, (EvtAction)erase1Listener));
@@ -146,7 +140,6 @@ bool stop1Listener()
   rec1 = HIGH;
   digitalWrite(LED1_PIN, LOW);
   digitalWrite(LED2_PIN, LOW);
-  mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED2));
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, false, (EvtAction)erase1Listener));
@@ -167,7 +160,6 @@ bool erase1Listener()
   ovdb1 = LOW;
   digitalWrite(LED1_PIN, LOW);
   digitalWrite(LED2_PIN, LOW);
-  mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED2));
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
   mgr.addListener(new EvtPinListener(BUTTON3_PIN, DEBOUNCE_SHORT, (EvtAction)rec2Listener));
@@ -180,24 +172,20 @@ bool blinkLED1()
   // red led
   if (rec1 == HIGH || ovdb1 == HIGH)
   {
-    led1State = !led1State;
-    digitalWrite(LED1_PIN, led1State);
+    digitalWrite(LED1_PIN, HIGH);
   }
   else
   {
-    led1State = LOW;
-    digitalWrite(LED1_PIN, led1State);
+    digitalWrite(LED1_PIN, LOW);
   }
   // green led
   if (play1 == HIGH || ovdb1 == HIGH)
   {
-    led2State = HIGH;
-    digitalWrite(LED2_PIN, led2State);
+    digitalWrite(LED2_PIN, HIGH);
   }
   else
   {
-    led2State = LOW;
-    digitalWrite(LED2_PIN, led2State);
+    digitalWrite(LED2_PIN, LOW);
   }
   return false;
 }
@@ -239,7 +227,7 @@ bool rec2Listener()
       play2 = HIGH;
       ovdb2 = LOW;
     }
-    mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED2));
+    blinkLED2();
   }
   else
   { // Wait with sending the off note to trigger the ableton 2 sec undo/redo
@@ -259,7 +247,6 @@ bool rec2Listener()
     play2 = HIGH;
     ovdb2 = LOW;
   }
-  mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED1));
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, false, (EvtAction)erase1Listener));
@@ -280,7 +267,6 @@ bool stop2Listener()
   rec2 = HIGH;
   digitalWrite(LED3_PIN, LOW);
   digitalWrite(LED4_PIN, LOW);
-  mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED1));
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, false, (EvtAction)erase1Listener));
@@ -301,7 +287,6 @@ bool erase2Listener()
   ovdb2 = LOW;
   digitalWrite(LED3_PIN, LOW);
   digitalWrite(LED4_PIN, LOW);
-  mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED1));
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
   mgr.addListener(new EvtPinListener(BUTTON3_PIN, DEBOUNCE_SHORT, (EvtAction)rec2Listener));
@@ -314,24 +299,20 @@ bool blinkLED2()
   // red led
   if (rec2 == HIGH || ovdb2 == HIGH)
   {
-    led3State = !led3State;
-    digitalWrite(LED3_PIN, led3State);
+    digitalWrite(LED3_PIN, HIGH);
   }
   else
   {
-    led3State = LOW;
-    digitalWrite(LED3_PIN, led3State);
+    digitalWrite(LED3_PIN, LOW);
   }
   // green led
   if (play2 == HIGH || ovdb2 == HIGH)
   {
-    led4State = HIGH;
-    digitalWrite(LED4_PIN, led4State);
+    digitalWrite(LED4_PIN, HIGH);
   }
   else
   {
-    led4State = LOW;
-    digitalWrite(LED4_PIN, led4State);
+    digitalWrite(LED4_PIN, LOW);
   }
   return false;
 }
