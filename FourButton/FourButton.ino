@@ -7,6 +7,11 @@
 #define LED2_PIN 3 // First green led
 #define BUTTON1_PIN 8 // First button
 #define BUTTON2_PIN 9 // Second button
+
+#define LED3_PIN 5 // Second red led
+#define LED4_PIN 6 // Second green led
+#define BUTTON3_PIN 11 // Third button
+#define BUTTON4_PIN 12 // Fourth button
 // Midi
 #define NOTE_OFF 0x80
 #define NOTE_ON 0x90
@@ -32,9 +37,16 @@
 bool led1State = LOW; // led is on or off
 bool led2State = LOW;
 bool pin1State = LOW;
-bool rec = LOW;
-bool play = LOW;
-bool ovdb = LOW;
+bool rec1 = LOW;
+bool play1 = LOW;
+bool ovdb1 = LOW;
+
+bool led3State = LOW; // led is on or off
+bool led4State = LOW;
+bool pin3State = LOW;
+bool rec2 = LOW;
+bool play2 = LOW;
+bool ovdb2 = LOW;
 
 EvtManager mgr;
 
@@ -44,12 +56,19 @@ void setup()
   pinMode(LED2_PIN, OUTPUT);
   pinMode(BUTTON1_PIN, INPUT);
   pinMode(BUTTON2_PIN, INPUT);
+  pinMode(LED3_PIN, OUTPUT);
+  pinMode(LED4_PIN, OUTPUT);
+  pinMode(BUTTON3_PIN, INPUT);
+  pinMode(BUTTON4_PIN, INPUT);
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, (EvtAction)erase1Listener));
+  mgr.addListener(new EvtPinListener(BUTTON3_PIN, DEBOUNCE_SHORT, (EvtAction)rec2Listener));
+  mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_LONG, (EvtAction)erase2Listener));
   //  Set MIDI baud rate:
   Serial.begin(31250);
   return true;
 }
+// Loop1
 // Rec / Play / Ovdb
 bool rec1Listener()
 {
@@ -62,31 +81,31 @@ bool rec1Listener()
   {
     sendMidi(NOTE_OFF, NOTE1, VELOCITY); // off
     // statemachine (recording -> playing <-> overdubbing)
-    if (rec == LOW && play == LOW && ovdb == LOW)
+    if (rec1 == LOW && play1 == LOW && ovdb1 == LOW)
     { // recording
-      rec = HIGH;
-      //play = LOW;
-      //ovdb = LOW;
+      rec1 = HIGH;
+      //play1 = LOW;
+      //ovdb1 = LOW;
     }
-    else if (rec == LOW && play == HIGH && ovdb == LOW)
+    else if (rec1 == LOW && play1 == HIGH && ovdb1 == LOW)
     { // overdubbing
-      //rec = LOW;
-      play = LOW;
-      ovdb = HIGH;
+      //rec1 = LOW;
+      play1 = LOW;
+      ovdb1 = HIGH;
     }
-    else if (rec == LOW && play == LOW && ovdb == HIGH)
+    else if (rec1 == LOW && play1 == LOW && ovdb1 == HIGH)
     { // playing after overdubbing
-      // rec = LOW;
-      play = HIGH;
-      ovdb = LOW;
+      // rec1 = LOW;
+      play1 = HIGH;
+      ovdb1 = LOW;
     }
     else
     { // playing after recording
-      rec = LOW;
-      play = HIGH;
-      ovdb = LOW;
+      rec1 = LOW;
+      play1 = HIGH;
+      ovdb1 = LOW;
     }
-    mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED));
+    mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED1));
   }
   else
   { // Wait with sending the off note to trigger the ableton 2 sec undo/redo
@@ -102,9 +121,9 @@ bool rec1Listener()
     digitalWrite(LED1_PIN, LOW);
     // LED 2 on
     digitalWrite(LED2_PIN, HIGH);
-    rec = LOW;
-    play = HIGH;
-    ovdb = LOW;
+    rec1 = LOW;
+    play1 = HIGH;
+    ovdb1 = LOW;
   }
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
@@ -118,9 +137,9 @@ bool stop1Listener()
   sendMidi(NOTE_ON, NOTE2, VELOCITY);  // on
   sendMidi(NOTE_OFF, NOTE2, VELOCITY); // off
   // Reset states
-  play = LOW;
-  ovdb = LOW;
-  rec = HIGH;
+  play1 = LOW;
+  ovdb1 = LOW;
+  rec1 = HIGH;
   digitalWrite(LED1_PIN, LOW);
   digitalWrite(LED2_PIN, LOW);
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
@@ -135,9 +154,9 @@ bool erase1Listener()
   sendMidi(NOTE_ON, NOTE4, VELOCITY);  // on
   sendMidi(NOTE_OFF, NOTE4, VELOCITY); // off
   // Set states
-  rec = LOW;
-  play = LOW;
-  ovdb = LOW;
+  rec1 = LOW;
+  play1 = LOW;
+  ovdb1 = LOW;
   digitalWrite(LED1_PIN, LOW);
   digitalWrite(LED2_PIN, LOW);
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
@@ -145,10 +164,10 @@ bool erase1Listener()
   return false;
 }
 
-bool blinkLED()
+bool blinkLED1()
 {
   // red led
-  if (rec == HIGH || ovdb == HIGH)
+  if (rec1 == HIGH || ovdb1 == HIGH)
   {
     led1State = !led1State;
     digitalWrite(LED1_PIN, led1State);
@@ -159,7 +178,7 @@ bool blinkLED()
     digitalWrite(LED1_PIN, led1State);
   }
   // green led
-  if (play == HIGH || ovdb == HIGH)
+  if (play1 == HIGH || ovdb1 == HIGH)
   {
     led2State = HIGH;
     digitalWrite(LED2_PIN, led2State);
@@ -168,6 +187,129 @@ bool blinkLED()
   {
     led2State = LOW;
     digitalWrite(LED2_PIN, led2State);
+  }
+  return false;
+}
+
+// Loop2
+// Rec / Play / Ovdb
+bool rec2Listener()
+{
+  mgr.resetContext();
+  digitalWrite(LED3_PIN, LOW);
+  sendMidi(NOTE_ON, NOTE5, VELOCITY); // on
+  delay(DEBOUNCE); // Wait for the button to change state
+  pin3State = digitalRead(BUTTON3_PIN);
+  if (pin3State == LOW) // Recording
+  {
+    sendMidi(NOTE_OFF, NOTE5, VELOCITY); // off
+    // statemachine (recording -> playing <-> overdubbing)
+    if (rec2 == LOW && play2 == LOW && ovdb2 == LOW)
+    { // recording
+      rec2 = HIGH;
+      //play2 = LOW;
+      //ovdb2 = LOW;
+    }
+    else if (rec2 == LOW && play2 == HIGH && ovdb2 == LOW)
+    { // overdubbing
+      //rec2 = LOW;
+      play2 = LOW;
+      ovdb2 = HIGH;
+    }
+    else if (rec2 == LOW && play2 == LOW && ovdb2 == HIGH)
+    { // playing after overdubbing
+      // rec2 = LOW;
+      play2 = HIGH;
+      ovdb2 = LOW;
+    }
+    else
+    { // playing after recording
+      rec2 = LOW;
+      play2 = HIGH;
+      ovdb2 = LOW;
+    }
+    mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED2));
+  }
+  else
+  { // Wait with sending the off note to trigger the ableton 2 sec undo/redo
+    delay(1600);
+    sendMidi(NOTE_OFF, NOTE5, VELOCITY); // off
+    /* sendMidi(NOTE_ON, NOTE3, VELOCITY);  // on
+    sendMidi(NOTE_OFF, NOTE3, VELOCITY); // off */
+    // LED 1 flash
+    digitalWrite(LED3_PIN, LOW);
+    delay(BLINK_FAST);
+    digitalWrite(LED3_PIN, HIGH);
+    delay(BLINK_FAST);
+    digitalWrite(LED3_PIN, LOW);
+    // LED 2 on
+    digitalWrite(LED4_PIN, HIGH);
+    rec2 = LOW;
+    play2 = HIGH;
+    ovdb2 = LOW;
+  }
+  mgr.addListener(new EvtPinListener(BUTTON3_PIN, DEBOUNCE_SHORT, (EvtAction)rec2Listener));
+  mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_SHORT, (EvtAction)stop2Listener));
+  mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_LONG, false, (EvtAction)erase2Listener));
+  return false;
+}
+// Stop
+bool stop2Listener()
+{
+  mgr.resetContext();
+  sendMidi(NOTE_ON, NOTE6, VELOCITY);  // on
+  sendMidi(NOTE_OFF, NOTE6, VELOCITY); // off
+  // Reset states
+  play2 = LOW;
+  ovdb2 = LOW;
+  rec2 = HIGH;
+  digitalWrite(LED3_PIN, LOW);
+  digitalWrite(LED4_PIN, LOW);
+  mgr.addListener(new EvtPinListener(BUTTON3_PIN, DEBOUNCE_SHORT, (EvtAction)rec2Listener));
+  mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_SHORT, (EvtAction)stop2Listener));
+  mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_LONG, false, (EvtAction)erase2Listener));
+  return true;
+}
+// Erase
+bool erase2Listener()
+{
+  mgr.resetContext();
+  sendMidi(NOTE_ON, NOTE8, VELOCITY);  // on
+  sendMidi(NOTE_OFF, NOTE8, VELOCITY); // off
+  // Set states
+  rec2 = LOW;
+  play2 = LOW;
+  ovdb2 = LOW;
+  digitalWrite(LED3_PIN, LOW);
+  digitalWrite(LED4_PIN, LOW);
+  mgr.addListener(new EvtPinListener(BUTTON3_PIN, DEBOUNCE_SHORT, (EvtAction)rec2Listener));
+  mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_SHORT, (EvtAction)stop2Listener));
+  return false;
+}
+
+bool blinkLED2()
+{
+  // red led
+  if (rec2 == HIGH || ovdb2 == HIGH)
+  {
+    led3State = !led3State;
+    digitalWrite(LED3_PIN, led3State);
+  }
+  else
+  {
+    led3State = LOW;
+    digitalWrite(LED3_PIN, led3State);
+  }
+  // green led
+  if (play2 == HIGH || ovdb2 == HIGH)
+  {
+    led4State = HIGH;
+    digitalWrite(LED4_PIN, led4State);
+  }
+  else
+  {
+    led4State = LOW;
+    digitalWrite(LED4_PIN, led4State);
   }
   return false;
 }
