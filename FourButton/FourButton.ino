@@ -125,9 +125,13 @@ bool rec1Listener()
     play1 = HIGH;
     ovdb1 = LOW;
   }
+  mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED2));
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, false, (EvtAction)erase1Listener));
+  mgr.addListener(new EvtPinListener(BUTTON3_PIN, DEBOUNCE_SHORT, (EvtAction)rec2Listener));
+  mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_SHORT, (EvtAction)stop2Listener));
+  mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_LONG, false, (EvtAction)erase2Listener));
   return false;
 }
 // Stop
@@ -142,9 +146,13 @@ bool stop1Listener()
   rec1 = HIGH;
   digitalWrite(LED1_PIN, LOW);
   digitalWrite(LED2_PIN, LOW);
+  mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED2));
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, false, (EvtAction)erase1Listener));
+  mgr.addListener(new EvtPinListener(BUTTON3_PIN, DEBOUNCE_SHORT, (EvtAction)rec2Listener));
+  mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_SHORT, (EvtAction)stop2Listener));
+  mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_LONG, false, (EvtAction)erase2Listener));
   return true;
 }
 // Erase
@@ -159,8 +167,11 @@ bool erase1Listener()
   ovdb1 = LOW;
   digitalWrite(LED1_PIN, LOW);
   digitalWrite(LED2_PIN, LOW);
+  mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED2));
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
+  mgr.addListener(new EvtPinListener(BUTTON3_PIN, DEBOUNCE_SHORT, (EvtAction)rec2Listener));
+  mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_SHORT, (EvtAction)stop2Listener));
   return false;
 }
 
@@ -248,6 +259,10 @@ bool rec2Listener()
     play2 = HIGH;
     ovdb2 = LOW;
   }
+  mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED1));
+  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, false, (EvtAction)erase1Listener));
   mgr.addListener(new EvtPinListener(BUTTON3_PIN, DEBOUNCE_SHORT, (EvtAction)rec2Listener));
   mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_SHORT, (EvtAction)stop2Listener));
   mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_LONG, false, (EvtAction)erase2Listener));
@@ -265,6 +280,10 @@ bool stop2Listener()
   rec2 = HIGH;
   digitalWrite(LED3_PIN, LOW);
   digitalWrite(LED4_PIN, LOW);
+  mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED1));
+  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_LONG, false, (EvtAction)erase1Listener));
   mgr.addListener(new EvtPinListener(BUTTON3_PIN, DEBOUNCE_SHORT, (EvtAction)rec2Listener));
   mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_SHORT, (EvtAction)stop2Listener));
   mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_LONG, false, (EvtAction)erase2Listener));
@@ -282,6 +301,9 @@ bool erase2Listener()
   ovdb2 = LOW;
   digitalWrite(LED3_PIN, LOW);
   digitalWrite(LED4_PIN, LOW);
+  mgr.addListener(new EvtTimeListener(BLINK_SLOW, true, (EvtAction)blinkLED1));
+  mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
+  mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
   mgr.addListener(new EvtPinListener(BUTTON3_PIN, DEBOUNCE_SHORT, (EvtAction)rec2Listener));
   mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_SHORT, (EvtAction)stop2Listener));
   return false;
