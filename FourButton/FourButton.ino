@@ -60,7 +60,8 @@ void setup()
   mgr.addListener(new EvtPinListener(BUTTON3_PIN, DEBOUNCE_SHORT, (EvtAction)rec2Listener));
   mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_LONG, (EvtAction)erase2Listener));
   //  Set MIDI baud rate:
-  Serial.begin(31250);
+  //Serial.begin(31250); // Midi connector
+  Serial.begin(9600); // USB Midi connector
   return true;
 }
 // Loop1
@@ -159,6 +160,10 @@ bool erase1Listener()
   play1 = LOW;
   ovdb1 = LOW;
   digitalWrite(LED1_PIN, LOW);
+  digitalWrite(LED2_PIN, LOW);
+  delay(BLINK_FAST);
+  digitalWrite(LED2_PIN, HIGH);
+  delay(BLINK_FAST);
   digitalWrite(LED2_PIN, LOW);
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
@@ -286,6 +291,10 @@ bool erase2Listener()
   play2 = LOW;
   ovdb2 = LOW;
   digitalWrite(LED3_PIN, LOW);
+  digitalWrite(LED4_PIN, LOW);
+  delay(BLINK_FAST);
+  digitalWrite(LED4_PIN, HIGH);
+  delay(BLINK_FAST);
   digitalWrite(LED4_PIN, LOW);
   mgr.addListener(new EvtPinListener(BUTTON1_PIN, DEBOUNCE_SHORT, (EvtAction)rec1Listener));
   mgr.addListener(new EvtPinListener(BUTTON2_PIN, DEBOUNCE_SHORT, (EvtAction)stop1Listener));
