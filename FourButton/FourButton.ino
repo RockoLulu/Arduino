@@ -60,8 +60,8 @@ void setup()
   mgr.addListener(new EvtPinListener(BUTTON3_PIN, DEBOUNCE_SHORT, (EvtAction)rec2Listener));
   mgr.addListener(new EvtPinListener(BUTTON4_PIN, DEBOUNCE_LONG, (EvtAction)erase2Listener));
   //  Set MIDI baud rate:
-  //Serial.begin(31250); // Midi connector
-  Serial.begin(9600); // USB Midi connector
+  Serial.begin(31250); // Midi connector
+  //Serial.begin(9600); // USB Midi connector
   return true;
 }
 // Loop1
